@@ -10,7 +10,7 @@ import (
 
 type Scanner struct {
 	Evaluator   *evaluator.Evaluator
-	Generator   generator.TaragetGenerator
+	Generator   generator.TargetGenerator
 	Auth        auth.Authenticator
 	URLTemplate string
 	VictimData  evaluator.ResponseData
@@ -22,7 +22,7 @@ type ScanResult struct {
 	Score int
 }
 
-func NewScanner(e *evaluator.Evaluator, g generator.TaragetGenerator) *Scanner {
+func NewScanner(e *evaluator.Evaluator, g generator.TargetGenerator) *Scanner {
 	return &Scanner{
 		Evaluator: e,
 		Generator: g,

@@ -1,5 +1,5 @@
 package generator
 
-type TaragetGenerator interface {
+type TargetGenerator interface {
 	Next() (string, bool)
 }

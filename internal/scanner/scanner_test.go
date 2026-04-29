@@ -3,6 +3,7 @@ package scanner
 import (
 	"testing"
 
+	"github.com/yuto-isayama/bola-scanner/internal/auth"
 	"github.com/yuto-isayama/bola-scanner/internal/evaluator"
 	"github.com/yuto-isayama/bola-scanner/internal/generator"
 )
@@ -12,7 +13,7 @@ func TestScanner_Run(t *testing.T) {
 
 	urlTmpl := "http://localhost:8080/users/{{ID}}"
 	gen := generator.NewSequentialGenerator(10, 10, "")
-	s := NewScanner(ev, gen)
+	s := NewScanner(ev, gen, &auth.NoAuth{}, 1)
 	s.URLTemplate = urlTmpl
 
 	results := s.Run()
@@ -36,5 +37,22 @@ func TestScanner_BuildURL(t *testing.T) {
 
 	if actual != expectedResult {
 		t.Errorf("expected %s, got %s", expectedResult, actual)
+	}
+}
+
+// 並行処理のテスト
+func TestScanner_RunParallel(t *testing.T) {
+	gen := generator.NewSequentialGenerator(1, 3, "")
+	ev := &evaluator.Evaluator{}
+	auth := &auth.NoAuth{}
+
+	s := NewScanner(ev, gen, auth, 2)
+	s.URLTemplate = "http://example.com/{{ID}}"
+	s.WorkerCount = 2 // 並行処理のワーカーの数
+
+	results := s.Run()
+
+	if len(results) != 3 {
+		t.Errorf("expected 3 results, got %d", len(results))
 	}
 }

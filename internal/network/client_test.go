@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestRetryClient_Do(t *testing.T) {
@@ -38,5 +39,28 @@ func TestRetryClient_Do(t *testing.T) {
 
 	if callCount != 3 {
 		t.Errorf("Expected 3 calls (2 retries + 1 success), got %d", callCount)
+	}
+}
+
+func TestRetryClient_CalculateBackoff(t *testing.T) {
+	client := &RetryClient{
+		BaseDelay: 100 * time.Millisecond,
+	}
+
+	tests := []struct {
+		attempt  int
+		expected time.Duration
+	}{
+		{attempt: 0, expected: 0},
+		{attempt: 1, expected: 100 * time.Millisecond},
+		{attempt: 2, expected: 200 * time.Millisecond},
+		{attempt: 3, expected: 400 * time.Millisecond},
+	}
+
+	for _, tt := range tests {
+		actual := client.CalcukateBackoff(tt.attempt)
+		if actual != tt.expected {
+			t.Errorf("attempt %d: expected %v, got %v", tt.attempt, tt.expected, actual)
+		}
 	}
 }

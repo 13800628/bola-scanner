@@ -1,13 +1,24 @@
 package network
 
 import (
+	"math"
 	"net/http"
 	"time"
 )
 
 type RetryClient struct {
 	MaxRetries int
+	BaseDelay  time.Duration
 	Client     http.Client
+}
+
+func (c *RetryClient) CalcukateBackoff(attempt int) time.Duration {
+	if attempt <= 0 {
+		return 0
+	}
+
+	multiplier := math.Pow(2, float64(attempt-1))
+	return time.Duration(float64(c.BaseDelay) * multiplier)
 }
 
 func (c *RetryClient) Do(req *http.Request) (*http.Response, error) {
@@ -15,14 +26,24 @@ func (c *RetryClient) Do(req *http.Request) (*http.Response, error) {
 	var err error
 
 	for i := 0; i < c.MaxRetries; i++ {
-		resp, err = c.Client.Do(req)
-
-		if err == nil && resp.StatusCode != http.StatusServiceUnavailable && resp.StatusCode != http.StatusTooManyRequests {
-			return resp, nil
+		if i > 0 {
+			time.Sleep(c.CalcukateBackoff(i))
 		}
 
-		// 簡易的な指数バックオフの実装(今後はここだけで一つの関数に切り出す)
-		time.Sleep(time.Duration(i) * 10 * time.Millisecond)
+		resp, err := c.Client.Do(req)
+		if !c.ShouldRetry(resp, err) {
+			return resp, err
+		}
 	}
 	return resp, err
+}
+
+func (c *RetryClient) ShouldRetry(resp *http.Response, err error) bool {
+	if err != nil {
+		return true
+	}
+	if resp == nil {
+		return false
+	}
+	return resp.StatusCode == http.StatusTooManyRequests || (resp.StatusCode >= 500 && resp.StatusCode <= 599)
 }

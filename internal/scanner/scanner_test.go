@@ -13,7 +13,7 @@ func TestScanner_Run(t *testing.T) {
 
 	urlTmpl := "http://localhost:8080/users/{{ID}}"
 	gen := generator.NewSequentialGenerator(10, 10, "")
-	s := NewScanner(ev, gen, &auth.NoAuth{}, 1)
+	s := NewScanner(ev, gen, &auth.NoAuth{}, 1, nil)
 	s.URLTemplate = urlTmpl
 
 	results := s.Run()
@@ -46,7 +46,7 @@ func TestScanner_RunParallel(t *testing.T) {
 	ev := &evaluator.Evaluator{}
 	auth := &auth.NoAuth{}
 
-	s := NewScanner(ev, gen, auth, 2)
+	s := NewScanner(ev, gen, auth, 2, nil)
 	s.URLTemplate = "http://example.com/{{ID}}"
 	s.WorkerCount = 2 // 並行処理のワーカーの数
 

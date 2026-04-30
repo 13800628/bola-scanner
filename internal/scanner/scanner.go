@@ -1,12 +1,15 @@
 package scanner
 
 import (
+	"io"
+	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/yuto-isayama/bola-scanner/internal/auth"
 	"github.com/yuto-isayama/bola-scanner/internal/evaluator"
 	"github.com/yuto-isayama/bola-scanner/internal/generator"
+	"github.com/yuto-isayama/bola-scanner/internal/network"
 )
 
 type Scanner struct {
@@ -17,19 +20,21 @@ type Scanner struct {
 	VictimData  evaluator.ResponseData
 	WorkerCount int
 	// ここに今後HTTPClientなどのついか
+	Client *network.RetryClient
 }
 
 type ScanResult struct {
 	ID    string
-	Score int
+	Score float64
 }
 
-func NewScanner(e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int) *Scanner {
+func NewScanner(e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
 	return &Scanner{
 		Evaluator:   e,
 		Generator:   g,
 		Auth:        a,
 		WorkerCount: workerCount,
+		Client:      client,
 	}
 }
 
@@ -46,9 +51,29 @@ func (s *Scanner) Run() []ScanResult {
 			for id := range idChan {
 				targerURL := s.buildURL(id)
 
+				// リクエストの作成
+				req, _ := http.NewRequest("GET", targerURL, nil)
+
+				// 認証情報の適応
+				s.Auth.Apply(req)
+
+				resp, err := s.Client.Do(req)
+				if err != nil {
+					continue // 通信エラー時はスキップ
+				}
+
+				body, _ := io.ReadAll(resp.Body)
+				resp.Body.Close()
+
+				currentData := evaluator.ResponseData{
+					Body:       string(body),
+					StatusCode: resp.StatusCode,
+				}
+				score := float64(s.Evaluator.FullEvaluation(s.VictimData, currentData, nil))
+
 				resultChan <- ScanResult{
 					ID:    targerURL,
-					Score: 0,
+					Score: score,
 				}
 			}
 		}()

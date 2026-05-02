@@ -69,11 +69,11 @@ func (s *Scanner) Run() []ScanResult {
 					Body:       string(body),
 					StatusCode: resp.StatusCode,
 				}
-				score := float64(s.Evaluator.FullEvaluation(s.VictimData, currentData, nil))
+				evalRes := s.Evaluator.FullEvaluation(s.VictimData, currentData, nil)
 
 				resultChan <- ScanResult{
 					ID:    targerURL,
-					Score: score,
+					Score: float64(evalRes.TotalScore),
 				}
 			}
 		}()

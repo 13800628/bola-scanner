@@ -14,7 +14,10 @@ import (
 )
 
 func TestScanner_E2E_BOLA_Detection(t *testing.T) {
+	// テスト用脆弱性を持つサーバー
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// ここの条件分岐は今後拡張の可能性高いし、条件が重くなる可能性もあるため、別関数として切り出すことも検討
 		if r.URL.Path == "/api/users/101" {
 			fmt.Fprint(w, `{"id":101, "name":"Victim", "secret":"top-secret"}`)
 		} else {
@@ -34,10 +37,14 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 	}
 
 	// 重みの設定しないとスコアが０になる(ここを忘れていたためにBOLAが検出できていなかった)
+	// evaluator側でこの重みを使ってスコアを計算する(今後はプロダクト側で重みを設定する)
 	ev := &evaluator.Evaluator{
-		StatusWeight:    10,
-		StructureWeight: 10,
-		KeywordWeight:   10,
+		Config: evaluator.Config{
+			StatusWeight:    10,
+			StructureWeight: 10,
+			KeywordWeight:   10,
+			SizeWeight:      10,
+		},
 	}
 	gen := generator.NewSequentialGenerator(100, 102, "")
 	at := &auth.NoAuth{}

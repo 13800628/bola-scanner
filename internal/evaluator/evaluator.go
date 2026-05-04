@@ -20,6 +20,16 @@ type Evaluator struct {
 	SizeWeight      int
 }
 
+// 重みづけをハードコート(外部からの実装も将来的には可能にするかも)
+func NewEvaluator() *Evaluator {
+	return &Evaluator{
+		StatusWeight:    30,
+		StructureWeight: 30,
+		KeywordWeight:   25,
+		SizeWeight:      15,
+	}
+}
+
 // テスト通していく最中に実装
 // 今はテストでモックを書き入れているだけ
 type ResponseData struct {
@@ -78,7 +88,7 @@ func (e *Evaluator) evaluateSize(victimSize, attackerSize int64) (int, string) {
 
 // 唯一の公開
 func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []string) EvaluationResult {
-	res := EvaluationResult{Factors: []string{}}
+	res := EvaluationResult{Factors: []string{}, TotalScore: 0}
 
 	// 1. Status Check
 	if s, m := e.evaluateStatus(attacker.StatusCode, victim.StatusCode); s > 0 {

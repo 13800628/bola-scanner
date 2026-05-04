@@ -6,9 +6,7 @@ import (
 )
 
 func TestEvaluateStatus(t *testing.T) {
-	ev := &Evaluator{
-		StatusWeight: 30,
-	}
+	ev := NewEvaluator()
 
 	t.Run("Status code match gives full score", func(t *testing.T) {
 		score, _ := ev.evaluateStatus(200, 200)
@@ -29,10 +27,7 @@ func TestEvaluateStatus(t *testing.T) {
 
 // JSON Test
 func TestEvaluator_EvaluateStructure(t *testing.T) {
-	ev := &Evaluator{
-		StatusWeight:    30,
-		StructureWeight: 30,
-	}
+	ev := NewEvaluator()
 
 	t.Run("JSON keys match perfectly", func(t *testing.T) {
 		victimJSON := `{"id": 1, "name": "attacker", "email": "v@example.com"}`
@@ -55,15 +50,14 @@ func TestEvaluator_EvaluateStructure(t *testing.T) {
 	})
 }
 
+// ここのテストだけは、ステータスコードを403にしてキーワードだけでスコアが上がることを検証する
 func TestEvaluator_EvaluateKeyWords(t *testing.T) {
-	ev := &Evaluator{
-		KeywordWeight: 25,
-	}
+	ev := NewEvaluator()
 
 	t.Run("Response contains sensitive keywords", func(t *testing.T) {
 		victim := ResponseData{StatusCode: 200, Body: `{}`}
 		attacker := ResponseData{
-			StatusCode: 200,
+			StatusCode: 403,
 			Body:       `{"id": 100, "name": "Isayama", "note": "secret info"}`,
 		}
 		keywords := []string{"Isayama", "secret"}
@@ -78,7 +72,7 @@ func TestEvaluator_EvaluateKeyWords(t *testing.T) {
 	t.Run("Response does not contain keywords", func(t *testing.T) {
 		victim := ResponseData{StatusCode: 200, Body: `{}`}
 		attacker := ResponseData{
-			StatusCode: 200,
+			StatusCode: 403,
 			Body:       `{"id": 101, "name": "Unknown", "note": "public"}`,
 		}
 		keywords := []string{"Isayama"}
@@ -91,12 +85,7 @@ func TestEvaluator_EvaluateKeyWords(t *testing.T) {
 }
 
 func TestEvaluator_FullEvaluation(t *testing.T) {
-	ev := &Evaluator{
-		StatusWeight:    30,
-		StructureWeight: 30,
-		KeywordWeight:   25,
-		SizeWeight:      15,
-	}
+	ev := NewEvaluator()
 
 	t.Run("Perfect Match - 100 points", func(t *testing.T) {
 		victim := ResponseData{StatusCode: 200, Body: `{"id": 1, "name": "victim"}`}
@@ -136,12 +125,7 @@ func TestEvaluator_FullEvaluation(t *testing.T) {
 }
 
 func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {
-	ev := &Evaluator{
-		StatusWeight:    30,
-		StructureWeight: 30,
-		KeywordWeight:   25,
-		SizeWeight:      15,
-	}
+	ev := NewEvaluator()
 
 	victim := ResponseData{StatusCode: 200, Body: "..."}
 	attacker := ResponseData{StatusCode: 200, Body: "secret data found"}
@@ -164,9 +148,7 @@ func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {
 }
 
 func TestEvaluator_EvaluateSize(t *testing.T) {
-	ev := &Evaluator{
-		SizeWeight: 15,
-	}
+	ev := NewEvaluator()
 
 	t.Run("Sizes are very close (within 10%)", func(t *testing.T) {
 		score, _ := ev.evaluateSize(100, 105)

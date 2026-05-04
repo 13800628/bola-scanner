@@ -27,10 +27,6 @@ type ResponseData struct {
 	Body       string
 }
 
-/*func NewEvaluator(cfg Config) *Evaluator {
-	return &Evaluator{Config: cfg}
-} */
-
 func (e *Evaluator) evaluateStatus(attackerStatus int, victimStatus int) (int, string) {
 	if attackerStatus == victimStatus {
 		return e.StatusWeight, fmt.Sprintf("Status Code Matched: %d", attackerStatus)

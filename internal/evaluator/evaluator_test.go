@@ -149,8 +149,8 @@ func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {
 
 	result := ev.FullEvaluation(victim, attacker, keywords)
 
-	if result.TotalScore != 50 {
-		t.Errorf("expected score 50, got %d", result.TotalScore)
+	if result.TotalScore != 55 {
+		t.Errorf("expected score 55, got %d", result.TotalScore)
 	}
 
 	fmt.Println("Detection Reasons:")

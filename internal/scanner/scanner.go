@@ -19,17 +19,20 @@ type Scanner struct {
 	URLTemplate string
 	VictimData  evaluator.ResponseData
 	WorkerCount int
+	Keywords    []string
 	// ここに今後HTTPClientなどのついか
 	Client *network.RetryClient
 }
 
 type ScanResult struct {
-	ID    string
-	Score float64
+	ID      string
+	Score   float64
+	Factors []string
 }
 
-func NewScanner(e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
+func NewScanner(urlTemplate string, e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
 	return &Scanner{
+		URLTemplate: urlTemplate,
 		Evaluator:   e,
 		Generator:   g,
 		Auth:        a,
@@ -58,7 +61,7 @@ func (s *Scanner) Run() []ScanResult {
 				s.Auth.Apply(req)
 
 				resp, err := s.Client.Do(req)
-				if err != nil {
+				if err != nil || resp == nil {
 					continue // 通信エラー時はスキップ
 				}
 
@@ -69,11 +72,12 @@ func (s *Scanner) Run() []ScanResult {
 					Body:       string(body),
 					StatusCode: resp.StatusCode,
 				}
-				evalRes := s.Evaluator.FullEvaluation(s.VictimData, currentData, nil)
+				evalRes := s.Evaluator.FullEvaluation(s.VictimData, currentData, s.Keywords)
 
 				resultChan <- ScanResult{
-					ID:    targerURL,
-					Score: float64(evalRes.TotalScore),
+					ID:      targerURL,
+					Score:   float64(evalRes.TotalScore),
+					Factors: evalRes.Factors,
 				}
 			}
 		}()

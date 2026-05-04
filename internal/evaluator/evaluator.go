@@ -13,12 +13,7 @@ type EvaluationResult struct {
 	TotalScore int
 	Factors    []string
 }
-
 type Evaluator struct {
-	Config Config
-}
-
-type Config struct {
 	StatusWeight    int
 	StructureWeight int
 	KeywordWeight   int
@@ -32,13 +27,13 @@ type ResponseData struct {
 	Body       string
 }
 
-func NewEvaluator(cfg Config) *Evaluator {
+/*func NewEvaluator(cfg Config) *Evaluator {
 	return &Evaluator{Config: cfg}
-}
+} */
 
 func (e *Evaluator) evaluateStatus(attackerStatus int, victimStatus int) (int, string) {
 	if attackerStatus == victimStatus {
-		return e.Config.StatusWeight, fmt.Sprintf("Status Code Matched: %d", attackerStatus)
+		return e.StatusWeight, fmt.Sprintf("Status Code Matched: %d", attackerStatus)
 	}
 	return 0, ""
 }
@@ -57,7 +52,7 @@ func (e *Evaluator) evaluateStructure(victimBody, attackerBody string) (int, str
 	aKeys := extractKeys(attackerMap)
 
 	if reflect.DeepEqual(vKeys, aKeys) {
-		return e.Config.StructureWeight, fmt.Sprintf("JSON Structure Matched: keys=%v", vKeys)
+		return e.StructureWeight, fmt.Sprintf("JSON Structure Matched: keys=%v", vKeys)
 	}
 	return 0, ""
 }
@@ -65,7 +60,7 @@ func (e *Evaluator) evaluateStructure(victimBody, attackerBody string) (int, str
 func (e *Evaluator) evaluateKeywords(body string, keywords []string) (int, string) {
 	for _, kw := range keywords {
 		if strings.Contains(body, kw) {
-			return e.Config.KeywordWeight, fmt.Sprintf("Keyword Found: %s", kw)
+			return e.KeywordWeight, fmt.Sprintf("Keyword Found: %s", kw)
 		}
 	}
 	return 0, ""
@@ -80,7 +75,7 @@ func (e *Evaluator) evaluateSize(victimSize, attackerSize int64) (int, string) {
 	ratio := diff / float64(victimSize)
 
 	if ratio <= 0.1 {
-		return e.Config.SizeWeight, fmt.Sprintf("Body Size Similarity: %.2f%% diff (Victim:%d, Attacker:%d)", ratio*100, victimSize, attackerSize)
+		return e.SizeWeight, fmt.Sprintf("Body Size Similarity: %.2f%% diff (Victim:%d, Attacker:%d)", ratio*100, victimSize, attackerSize)
 	}
 	return 0, ""
 }

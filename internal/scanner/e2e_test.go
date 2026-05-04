@@ -39,12 +39,10 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 	// 重みの設定しないとスコアが０になる(ここを忘れていたためにBOLAが検出できていなかった)
 	// evaluator側でこの重みを使ってスコアを計算する(今後はプロダクト側で重みを設定する)
 	ev := &evaluator.Evaluator{
-		Config: evaluator.Config{
-			StatusWeight:    10,
-			StructureWeight: 10,
-			KeywordWeight:   10,
-			SizeWeight:      10,
-		},
+		StatusWeight:    10,
+		StructureWeight: 10,
+		KeywordWeight:   10,
+		SizeWeight:      10,
 	}
 	gen := generator.NewSequentialGenerator(100, 102, "")
 	at := &auth.NoAuth{}

@@ -7,9 +7,7 @@ import (
 
 func TestEvaluateStatus(t *testing.T) {
 	ev := &Evaluator{
-		Config: Config{
-			StatusWeight: 30,
-		},
+		StatusWeight: 30,
 	}
 
 	t.Run("Status code match gives full score", func(t *testing.T) {
@@ -32,10 +30,8 @@ func TestEvaluateStatus(t *testing.T) {
 // JSON Test
 func TestEvaluator_EvaluateStructure(t *testing.T) {
 	ev := &Evaluator{
-		Config: Config{
-			StatusWeight:    30,
-			StructureWeight: 30,
-		},
+		StatusWeight:    30,
+		StructureWeight: 30,
 	}
 
 	t.Run("JSON keys match perfectly", func(t *testing.T) {
@@ -61,9 +57,7 @@ func TestEvaluator_EvaluateStructure(t *testing.T) {
 
 func TestEvaluator_EvaluateKeyWords(t *testing.T) {
 	ev := &Evaluator{
-		Config: Config{
-			KeywordWeight: 25,
-		},
+		KeywordWeight: 25,
 	}
 
 	t.Run("Response contains sensitive keywords", func(t *testing.T) {
@@ -98,12 +92,10 @@ func TestEvaluator_EvaluateKeyWords(t *testing.T) {
 
 func TestEvaluator_FullEvaluation(t *testing.T) {
 	ev := &Evaluator{
-		Config: Config{
-			StatusWeight:    30,
-			StructureWeight: 30,
-			KeywordWeight:   25,
-			SizeWeight:      15,
-		},
+		StatusWeight:    30,
+		StructureWeight: 30,
+		KeywordWeight:   25,
+		SizeWeight:      15,
 	}
 
 	t.Run("Perfect Match - 100 points", func(t *testing.T) {
@@ -144,14 +136,12 @@ func TestEvaluator_FullEvaluation(t *testing.T) {
 }
 
 func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {
-	cfg := Config{
+	ev := &Evaluator{
 		StatusWeight:    30,
 		StructureWeight: 30,
 		KeywordWeight:   25,
 		SizeWeight:      15,
 	}
-
-	ev := NewEvaluator(cfg)
 
 	victim := ResponseData{StatusCode: 200, Body: "..."}
 	attacker := ResponseData{StatusCode: 200, Body: "secret data found"}
@@ -175,7 +165,7 @@ func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {
 
 func TestEvaluator_EvaluateSize(t *testing.T) {
 	ev := &Evaluator{
-		Config: Config{SizeWeight: 15},
+		SizeWeight: 15,
 	}
 
 	t.Run("Sizes are very close (within 10%)", func(t *testing.T) {

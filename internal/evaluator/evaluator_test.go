@@ -48,6 +48,16 @@ func TestEvaluator_EvaluateStructure(t *testing.T) {
 			t.Errorf("expected 0, but got %d", score)
 		}
 	})
+
+	t.Run("Invalid JSPON returns 0", func(t *testing.T) {
+		score, msg := ev.evaluateStructure("invalid", `{"id":1}`)
+		if score != 0 {
+			t.Errorf("expected 0, got %d", score)
+		}
+		if msg != "" {
+			t.Errorf("expected empty message, got %s", msg)
+		}
+	})
 }
 
 // ここのテストだけは、ステータスコードを403にしてキーワードだけでスコアが上がることを検証する

@@ -173,4 +173,11 @@ func TestEvaluator_EvaluateSize(t *testing.T) {
 			t.Errorf("expected 0, but got %d", score)
 		}
 	})
+
+	t.Run("Victim size is zero returns 0", func(t *testing.T) {
+		score, _ := ev.evaluateSize(0, 100)
+		if score != 0 {
+			t.Errorf("expected 0, but got %d", score)
+		}
+	})
 }

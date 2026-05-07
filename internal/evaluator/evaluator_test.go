@@ -132,6 +132,18 @@ func TestEvaluator_FullEvaluation(t *testing.T) {
 			t.Errorf("expected 30, but got %d", result.TotalScore)
 		}
 	})
+
+	t.Run("Non-JSON body only status matches", func(t *testing.T) {
+		victim := ResponseData{StatusCode: 200, Body: "plain text"}
+		attacker := ResponseData{StatusCode: 200, Body: "plain text"}
+		keywords := []string{}
+
+		result := ev.FullEvaluation(victim, attacker, keywords)
+
+		if result.TotalScore != 45 {
+			t.Errorf("expected 45, got %d", result.TotalScore)
+		}
+	})
 }
 
 func TestEvaluator_FullEvaluation_Reasoning(t *testing.T) {

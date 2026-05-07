@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/yuto-isayama/bola-scanner/internal/auth"
@@ -16,25 +18,31 @@ func main() {
 	fmt.Println("BOLA Scanner Starting...")
 
 	ev := evaluator.NewEvaluator()
-	gen := generator.NewSequentialGenerator(100, 120, "")
-	at := &auth.NoAuth{}
-
 	client := &network.RetryClient{
 		MaxRetries: 3,
 		BaseDelay:  1 * time.Second,
 		Client:     http.Client{Timeout: 10 * time.Second},
 	}
-
 	urlTmpl := "http://api.example.com/v1/users/{{ID}}"
 	keywords := []string{"admin", "password", "email", "sercret", "token"}
 
+	attacker := &auth.Profile{Username: "attacker_user", Password: "password123"}
+	victim := &auth.Profile{Username: "victim_user", Password: "password456"}
+
+	baseURL := "http://api.example.com"
+	fmt.Println("[*] Authenticating users...")
+	_ = attacker.Login(baseURL)
+	_ = victim.Login(baseURL)
+
+	gen := generator.NewSequentialGenerator(100, 120, "")
+	at := &auth.NoAuth{}
+
+	// スキャナーの作成
 	s := scanner.NewScanner(urlTmpl, ev, gen, at, 5, client)
 	s.Keywords = keywords
 
-	s.VictimData = evaluator.ResponseData{
-		StatusCode: 200,
-		Body:       `{"id":99, "name":"test-user", "role":"user"}`,
-	}
+	fmt.Println("[*] Fetching victim's baseline data...")
+	s.VictimData = fetchVictimBaseline(client, victim, urlTmpl)
 
 	fmt.Printf("Scanning %s ...\n", urlTmpl)
 	startTime := time.Now()
@@ -53,4 +61,20 @@ func main() {
 		}
 	}
 	fmt.Printf("\n Scan finished in %v. Found %d suspecious endpoints.\n", duration, foundCount)
+}
+
+func fetchVictimBaseline(client *network.RetryClient, v *auth.Profile, tmpl string) evaluator.ResponseData {
+	url := strings.Replace(tmpl, "{{ID}}", fmt.Sprintf("%d", v.UserID), 1)
+	req, _ := http.NewRequest("GET", url, nil)
+
+	v.GetAuthenticator().Apply(req)
+
+	resp, _ := client.Do(req)
+	body, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	return evaluator.ResponseData{
+		StatusCode: resp.StatusCode,
+		Body:       string(body),
+	}
 }

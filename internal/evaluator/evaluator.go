@@ -97,7 +97,7 @@ func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []str
 	evaluators := []evaluatorFunc{
 		func() (int, string) { return e.evaluateStatus(victim.StatusCode, attacker.StatusCode) },
 		func() (int, string) { return e.evaluateStructure(victim.Body, attacker.Body) },
-		func() (int, string) { return e.evaluateKeywords(victim.Body, keywords) },
+		func() (int, string) { return e.evaluateKeywords(attacker.Body, keywords) },
 		func() (int, string) { return e.evaluateSize(len(victim.Body), len(attacker.Body)) },
 	}
 

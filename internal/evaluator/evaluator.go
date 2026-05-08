@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"reflect"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -57,7 +57,7 @@ func (e *Evaluator) evaluateStructure(victimBody, attackerBody string) (int, str
 	vKeys := extractKeys(victimMap)
 	aKeys := extractKeys(attackerMap)
 
-	if reflect.DeepEqual(vKeys, aKeys) {
+	if slices.Equal(vKeys, aKeys) {
 		return e.StructureWeight, fmt.Sprintf("JSON Structure Matched: keys=%v", vKeys)
 	}
 	return 0, ""

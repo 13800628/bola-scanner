@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// 準備スペース
 type EvaluationResult struct {
 	TotalScore int
 	Factors    []string
@@ -37,6 +38,7 @@ type ResponseData struct {
 	Body       string
 }
 
+// 実装ブロック
 func (e *Evaluator) evaluateStatus(victimStatus int, attackerStatus int) (int, string) {
 	if attackerStatus == victimStatus {
 		return e.StatusWeight, fmt.Sprintf("Status Code Matched: %d", attackerStatus)
@@ -86,32 +88,24 @@ func (e *Evaluator) evaluateSize(victimSize, attackerSize int64) (int, string) {
 	return 0, ""
 }
 
+type evaluatorFunc func() (int, string)
+
 // 唯一の公開
 func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []string) EvaluationResult {
 	res := EvaluationResult{Factors: []string{}, TotalScore: 0}
 
-	// 1. Status Check
-	if s, m := e.evaluateStatus(victim.StatusCode, attacker.StatusCode); s > 0 {
-		res.TotalScore += s
-		res.Factors = append(res.Factors, m)
+	evaluators := []evaluatorFunc{
+		func() (int, string) { return e.evaluateStatus(victim.StatusCode, attacker.StatusCode) },
+		func() (int, string) { return e.evaluateStructure(victim.Body, attacker.Body) },
+		func() (int, string) { return e.evaluateKeywords(victim.Body, keywords) },
+		func() (int, string) { return e.evaluateSize(int64(len(victim.Body)), int64(len(attacker.Body))) },
 	}
 
-	// 2. Structure Check
-	if s, m := e.evaluateStructure(victim.Body, attacker.Body); s > 0 {
-		res.TotalScore += s
-		res.Factors = append(res.Factors, m)
-	}
-
-	// 3. Keywords Check
-	if s, m := e.evaluateKeywords(attacker.Body, keywords); s > 0 {
-		res.TotalScore += s
-		res.Factors = append(res.Factors, m)
-	}
-
-	// 4. Size Check
-	if s, m := e.evaluateSize(int64(len(victim.Body)), int64(len(attacker.Body))); s > 0 {
-		res.TotalScore += s
-		res.Factors = append(res.Factors, m)
+	for _, fn := range evaluators {
+		if s, m := fn(); s > 0 {
+			res.TotalScore += s
+			res.Factors = append(res.Factors, m)
+		}
 	}
 
 	return res

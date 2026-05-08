@@ -66,6 +66,37 @@ func (s *Scanner) PrepareVictimData(victimAuth auth.Authenticator, victimID stri
 	return nil
 }
 
+func (s *Scanner) scanOne(id string) (ScanResult, error) {
+	targetURL := s.buildURL(id)
+	req, err := http.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		return ScanResult{}, err
+	}
+	s.Auth.Apply(req)
+
+	resp, err := s.Client.Do(req)
+	if err != nil {
+		return ScanResult{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ScanResult{}, err
+	}
+
+	currentData := evaluator.ResponseData{
+		Body:       string(body),
+		StatusCode: resp.StatusCode,
+	}
+	evalRes := s.Evaluator.FullEvaluation(s.VictimData, currentData, s.Keywords)
+	return ScanResult{
+		ID:      targetURL,
+		Score:   float64(evalRes.TotalScore),
+		Factors: evalRes.Factors,
+	}, nil
+}
+
 func (s *Scanner) Run() []ScanResult {
 	idChan := make(chan string)
 	resultChan := make(chan ScanResult)
@@ -77,40 +108,11 @@ func (s *Scanner) Run() []ScanResult {
 		go func() {
 			defer wg.Done()
 			for id := range idChan {
-				targerURL := s.buildURL(id)
-
-				// リクエストの作成
-				req, err := http.NewRequest("GET", targerURL, nil)
+				res, err := s.scanOne(id)
 				if err != nil {
 					continue
 				}
-
-				// 認証情報の適応
-				s.Auth.Apply(req)
-
-				resp, err := s.Client.Do(req)
-				if err != nil || resp == nil {
-					continue // 通信エラー時はスキップ
-				}
-
-				body, err := io.ReadAll(resp.Body)
-				if err != nil {
-					continue
-				}
-
-				resp.Body.Close()
-
-				currentData := evaluator.ResponseData{
-					Body:       string(body),
-					StatusCode: resp.StatusCode,
-				}
-				evalRes := s.Evaluator.FullEvaluation(s.VictimData, currentData, s.Keywords)
-
-				resultChan <- ScanResult{
-					ID:      targerURL,
-					Score:   float64(evalRes.TotalScore),
-					Factors: evalRes.Factors,
-				}
+				resultChan <- res
 			}
 		}()
 	}

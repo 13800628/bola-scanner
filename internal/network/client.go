@@ -30,7 +30,7 @@ func (c *RetryClient) Do(req *http.Request) (*http.Response, error) {
 			time.Sleep(c.CalcukateBackoff(i))
 		}
 
-		resp, err := c.Client.Do(req)
+		resp, err = c.Client.Do(req)
 		if !c.ShouldRetry(resp, err) {
 			return resp, err
 		}

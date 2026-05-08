@@ -37,6 +37,15 @@ type Profile struct {
 	Password string
 	UserID   int
 	Token    string
+	Client   *http.Client
+}
+
+func NewProfile(username, password string) *Profile {
+	return &Profile{
+		Username: username,
+		Password: password,
+		Client:   &http.Client{Timeout: 5 * time.Second},
+	}
 }
 
 func (p *Profile) Login(baseURL string) error {
@@ -51,8 +60,7 @@ func (p *Profile) Login(baseURL string) error {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Post(loginURL, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := p.Client.Post(loginURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("auth request failed: %w", err)
 	}

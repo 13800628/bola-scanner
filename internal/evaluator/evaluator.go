@@ -37,7 +37,7 @@ type ResponseData struct {
 	Body       string
 }
 
-func (e *Evaluator) evaluateStatus(attackerStatus int, victimStatus int) (int, string) {
+func (e *Evaluator) evaluateStatus(victimStatus int, attackerStatus int) (int, string) {
 	if attackerStatus == victimStatus {
 		return e.StatusWeight, fmt.Sprintf("Status Code Matched: %d", attackerStatus)
 	}
@@ -91,7 +91,7 @@ func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []str
 	res := EvaluationResult{Factors: []string{}, TotalScore: 0}
 
 	// 1. Status Check
-	if s, m := e.evaluateStatus(attacker.StatusCode, victim.StatusCode); s > 0 {
+	if s, m := e.evaluateStatus(victim.StatusCode, attacker.StatusCode); s > 0 {
 		res.TotalScore += s
 		res.Factors = append(res.Factors, m)
 	}

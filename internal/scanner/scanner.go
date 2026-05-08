@@ -44,7 +44,10 @@ func NewScanner(urlTemplate string, e *evaluator.Evaluator, g generator.TargetGe
 // スキャン開始前に被害者データを動的に取得するメソッド
 func (s *Scanner) PrepareVictimData(victimAuth auth.Authenticator, victimID string) error {
 	targetURL := s.buildURL(victimID)
-	req, _ := http.NewRequest("GET", targetURL, nil)
+	req, err := http.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		return err
+	}
 
 	// レスポンスを取得しにいく
 	victimAuth.Apply(req)
@@ -77,7 +80,10 @@ func (s *Scanner) Run() []ScanResult {
 				targerURL := s.buildURL(id)
 
 				// リクエストの作成
-				req, _ := http.NewRequest("GET", targerURL, nil)
+				req, err := http.NewRequest("GET", targerURL, nil)
+				if err != nil {
+					continue
+				}
 
 				// 認証情報の適応
 				s.Auth.Apply(req)
@@ -87,7 +93,11 @@ func (s *Scanner) Run() []ScanResult {
 					continue // 通信エラー時はスキップ
 				}
 
-				body, _ := io.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					continue
+				}
+
 				resp.Body.Close()
 
 				currentData := evaluator.ResponseData{

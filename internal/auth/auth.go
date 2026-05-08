@@ -46,7 +46,10 @@ func (p *Profile) Login(baseURL string) error {
 		"username": p.Username,
 		"password": p.Password,
 	}
-	jsonData, _ := json.Marshal(payload)
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal payload: %w", err)
+	}
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Post(loginURL, "application/json", bytes.NewBuffer(jsonData))
@@ -77,7 +80,7 @@ func (p *Profile) Login(baseURL string) error {
 
 func (p *Profile) GetAuthenticator() Authenticator {
 	if p.Token != "" {
-		return &NoAuth{}
+		return &BearerAuth{Token: p.Token}
 	}
-	return &BearerAuth{Token: p.Token}
+	return &NoAuth{}
 }

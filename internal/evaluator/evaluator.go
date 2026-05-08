@@ -74,7 +74,7 @@ func (e *Evaluator) evaluateKeywords(body string, keywords []string) (int, strin
 	return 0, ""
 }
 
-func (e *Evaluator) evaluateSize(victimSize, attackerSize int64) (int, string) {
+func (e *Evaluator) evaluateSize(victimSize, attackerSize int) (int, string) {
 	if victimSize == 0 {
 		return 0, ""
 	}
@@ -98,7 +98,7 @@ func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []str
 		func() (int, string) { return e.evaluateStatus(victim.StatusCode, attacker.StatusCode) },
 		func() (int, string) { return e.evaluateStructure(victim.Body, attacker.Body) },
 		func() (int, string) { return e.evaluateKeywords(victim.Body, keywords) },
-		func() (int, string) { return e.evaluateSize(int64(len(victim.Body)), int64(len(attacker.Body))) },
+		func() (int, string) { return e.evaluateSize(len(victim.Body), len(attacker.Body)) },
 	}
 
 	for _, fn := range evaluators {

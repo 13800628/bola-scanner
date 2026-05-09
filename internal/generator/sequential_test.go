@@ -17,6 +17,15 @@ func TestSequentialGenerator(t *testing.T) {
 		}
 	})
 
+	// start == end 一件だけのケース
+	t.Run("Single element", func(t *testing.T) {
+		gen := NewSequentialGenerator(5, 5, "")
+		val, hasNext := gen.Next()
+		if val != "5" || hasNext {
+			t.Errorf("expected 5, false; got %s, %v", val, hasNext)
+		}
+	})
+
 	t.Run("Basic sequence", func(t *testing.T) {
 		val, hasNext := gen.Next()
 		if val != "10" || !hasNext {
@@ -45,5 +54,25 @@ func TestSequentialGenerator(t *testing.T) {
 		if val != "user_2" {
 			t.Errorf("expected user_2, got %s", val)
 		}
+	})
+
+	// 範囲を超えた呼び出し
+	t.Run("Exhaysted generator returns empty", func(t *testing.T) {
+		gen := NewSequentialGenerator(1, 1, "")
+		gen.Next()
+		val, hasNext := gen.Next()
+		if val != "" || hasNext {
+			t.Errorf("expected empty, false; got %s, %v", val, hasNext)
+		}
+	})
+
+	// start > endのガード確認
+	t.Run("start greater than end", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("expected panic but did not panic")
+			}
+		}()
+		NewSequentialGenerator(10, 5, "")
 	})
 }

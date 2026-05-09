@@ -23,6 +23,13 @@ func TestEvaluateStatus(t *testing.T) {
 			t.Errorf("expected 0, but got %d", score)
 		}
 	})
+
+	t.Run("Both 403 gives full score", func(t *testing.T) {
+		score, _ := ev.evaluateStatus(403, 403)
+		if score != 30 {
+			t.Errorf("expected 30, got %d", score)
+		}
+	})
 }
 
 // JSON Test

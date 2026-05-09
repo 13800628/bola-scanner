@@ -229,4 +229,18 @@ func TestEvaluator_EvaluateSize(t *testing.T) {
 			t.Errorf("expected 0, but got %d", score)
 		}
 	})
+
+	t.Run("Victim size zero returns 0", func(t *testing.T) {
+		score, _ := ev.evaluateSize(0, 100)
+		if score != 0 {
+			t.Errorf("expected 0, got %d", score)
+		}
+	})
+
+	t.Run("Exactly 10% dift gives score", func(t *testing.T) {
+		score, _ := ev.evaluateSize(100, 110)
+		if score != 15 {
+			t.Errorf("expected 15, got %d", score)
+		}
+	})
 }

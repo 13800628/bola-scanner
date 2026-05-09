@@ -115,6 +115,20 @@ func TestEvaluator_EvaluateKeyWords(t *testing.T) {
 			t.Errorf("expected 0, but got %d", result.TotalScore)
 		}
 	})
+
+	t.Run("Empty keywords returns 0", func(t *testing.T) {
+		score, _ := ev.evaluateKeywords(`{"id": 1}`, []string{})
+		if score != 0 {
+			t.Errorf("expected 0, got %d", score)
+		}
+	})
+
+	t.Run("Second keyword matches 0", func(t *testing.T) {
+		score, _ := ev.evaluateKeywords(`{"name": "secret"}`, []string{"victim", "secret"})
+		if score != 25 {
+			t.Errorf("expected 25, got %d", score)
+		}
+	})
 }
 
 func TestEvaluator_FullEvaluation(t *testing.T) {

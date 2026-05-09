@@ -65,6 +65,22 @@ func TestEvaluator_EvaluateStructure(t *testing.T) {
 			t.Errorf("expected empty message, got %s", msg)
 		}
 	})
+
+	t.Run("Invalid JSON returns 0", func(t *testing.T) {
+		score, msg := ev.evaluateStructure("invalid", `{"id":1}`)
+		if score != 0 || msg != "" {
+			t.Errorf("expected 0 and empty, got %d and %s", score, msg)
+		}
+	})
+
+	t.Run("Partial key macth returns 0", func(t *testing.T) {
+		victim := `{"id": 1, "name": "victim", "email": "v@example.com"}`
+		attacer := `{"id": "attacker"}`
+		score, _ := ev.evaluateStructure(victim, attacer)
+		if score != 0 {
+			t.Errorf("expected 0, got %d", score)
+		}
+	})
 }
 
 // ここのテストだけは、ステータスコードを403にしてキーワードだけでスコアが上がることを検証する

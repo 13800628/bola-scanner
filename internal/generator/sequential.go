@@ -9,6 +9,9 @@ type SequentialGenerator struct {
 }
 
 func NewSequentialGenerator(start, end int, prefix string) *SequentialGenerator {
+	if start > end {
+		panic("start must be less than or equals to end")
+	}
 	return &SequentialGenerator{
 		currentID: start,
 		endID:     end,
@@ -25,7 +28,5 @@ func (g *SequentialGenerator) Next() (string, bool) {
 
 	g.currentID++
 
-	hasNext := g.currentID <= g.endID
-
-	return res, hasNext
+	return res, g.currentID <= g.endID
 }

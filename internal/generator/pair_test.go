@@ -24,4 +24,12 @@ func TestPairGenerator(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Two IDs returns single pair", func(t *testing.T) {
+		gen := NewPairGenerator([]string{"1", "2"})
+		victim, attacker, hasNext := gen.Next()
+		if victim != "1" || attacker != "2" || hasNext {
+			t.Errorf("expected (1, 2, false), got (%s, %s, %v)", victim, attacker, hasNext)
+		}
+	})
 }

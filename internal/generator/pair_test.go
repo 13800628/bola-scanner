@@ -32,4 +32,12 @@ func TestPairGenerator(t *testing.T) {
 			t.Errorf("expected (1, 2, false), got (%s, %s, %v)", victim, attacker, hasNext)
 		}
 	})
+
+	t.Run("Single ID returns no pairs", func(t *testing.T) {
+		gen := NewPairGenerator([]string{"1"})
+		victim, attacker, hasNext := gen.Next()
+		if victim != "" || attacker != "" || hasNext {
+			t.Errorf("expected empty pair, got (%s, %s, %v)", victim, attacker, hasNext)
+		}
+	})
 }

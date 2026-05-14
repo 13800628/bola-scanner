@@ -19,14 +19,18 @@ func NewSequentialGenerator(start, end int, prefix string) *SequentialGenerator 
 	}
 }
 
-func (g *SequentialGenerator) Next() (string, bool) {
+func (g *SequentialGenerator) Next() (string, string, bool) {
 	if g.currentID > g.endID {
-		return "", false
+		return "", "", false
 	}
 
-	res := g.prefix + strconv.Itoa(g.currentID)
+	victim := g.prefix + strconv.Itoa(g.currentID)
+
+	attacker := ""
 
 	g.currentID++
 
-	return res, g.currentID <= g.endID
+	hasNext := g.currentID <= g.endID
+
+	return victim, attacker, hasNext
 }

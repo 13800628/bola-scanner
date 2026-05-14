@@ -30,6 +30,11 @@ type ScanResult struct {
 	Factors []string
 }
 
+type ScanJob struct {
+	VictimID   string
+	AttackerID string
+}
+
 func NewScanner(urlTemplate string, e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
 	return &Scanner{
 		URLTemplate: urlTemplate,
@@ -98,7 +103,7 @@ func (s *Scanner) scanOne(id string) (ScanResult, error) {
 }
 
 func (s *Scanner) Run() []ScanResult {
-	idChan := make(chan string)
+	idChan := make(chan ScanJob)
 	resultChan := make(chan ScanResult)
 	var wg sync.WaitGroup
 
@@ -107,8 +112,8 @@ func (s *Scanner) Run() []ScanResult {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for id := range idChan {
-				res, err := s.scanOne(id)
+			for job := range idChan {
+				res, err := s.scanOne(job.VictimID)
 				if err != nil {
 					continue
 				}
@@ -119,9 +124,9 @@ func (s *Scanner) Run() []ScanResult {
 
 	go func() {
 		for {
-			id, hasNext := s.Generator.Next()
-			if id != "" {
-				idChan <- id
+			victimID, attackerID, hasNext := s.Generator.Next()
+			if victimID != "" {
+				idChan <- ScanJob{VictimID: victimID, AttackerID: attackerID}
 			}
 			if !hasNext {
 				break

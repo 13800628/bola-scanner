@@ -11,30 +11,30 @@ func TestSequentialGenerator(t *testing.T) {
 	t.Run("NewSequentialGenerator", func(t *testing.T) {
 		gen := NewSequentialGenerator(1, 3, "item-")
 
-		val, hasNext := gen.Next()
-		if val != "item-1" || !hasNext {
-			t.Errorf("expected item-1, true; got %s, %v", val, hasNext)
+		victim, _, hasNext := gen.Next()
+		if victim != "item-1" || !hasNext {
+			t.Errorf("expected item-1, true; got %s, %v", victim, hasNext)
 		}
 	})
 
 	// start == end 一件だけのケース
 	t.Run("Single element", func(t *testing.T) {
 		gen := NewSequentialGenerator(5, 5, "")
-		val, hasNext := gen.Next()
-		if val != "5" || hasNext {
-			t.Errorf("expected 5, false; got %s, %v", val, hasNext)
+		victim, _, hasNext := gen.Next()
+		if victim != "5" || hasNext {
+			t.Errorf("expected 5, false; got %s, %v", victim, hasNext)
 		}
 	})
 
 	t.Run("Basic sequence", func(t *testing.T) {
-		val, hasNext := gen.Next()
-		if val != "10" || !hasNext {
-			t.Errorf("1st Next() = %v, %v; 10, true", val, hasNext)
+		victim, _, hasNext := gen.Next()
+		if victim != "10" || !hasNext {
+			t.Errorf("1st Next() = %v, %v; 10, true", victim, hasNext)
 		}
 
-		val, hasNext = gen.Next()
-		if val != "11" || hasNext {
-			t.Errorf("2nd Next() = %v, %v; want 11, false", val, hasNext)
+		victim, _, hasNext = gen.Next()
+		if victim != "11" || hasNext {
+			t.Errorf("2nd Next() = %v, %v; want 11, false", victim, hasNext)
 		}
 	})
 
@@ -45,14 +45,14 @@ func TestSequentialGenerator(t *testing.T) {
 			prefix:    "user_",
 		}
 
-		val, _ := gen.Next()
-		if val != "user_1" {
-			t.Errorf("expected user_1, got %s", val)
+		victim, _, _ := gen.Next()
+		if victim != "user_1" {
+			t.Errorf("expected user_1, got %s", victim)
 		}
 
-		val, _ = gen.Next()
-		if val != "user_2" {
-			t.Errorf("expected user_2, got %s", val)
+		victim, _, _ = gen.Next()
+		if victim != "user_2" {
+			t.Errorf("expected user_2, got %s", victim)
 		}
 	})
 
@@ -60,9 +60,9 @@ func TestSequentialGenerator(t *testing.T) {
 	t.Run("Exhaysted generator returns empty", func(t *testing.T) {
 		gen := NewSequentialGenerator(1, 1, "")
 		gen.Next()
-		val, hasNext := gen.Next()
-		if val != "" || hasNext {
-			t.Errorf("expected empty, false; got %s, %v", val, hasNext)
+		victim, _, hasNext := gen.Next()
+		if victim != "" || hasNext {
+			t.Errorf("expected empty, false; got %s, %v", victim, hasNext)
 		}
 	})
 

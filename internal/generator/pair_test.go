@@ -40,4 +40,21 @@ func TestPairGenerator(t *testing.T) {
 			t.Errorf("expected empty pair, got (%s, %s, %v)", victim, attacker, hasNext)
 		}
 	})
+
+	t.Run("Empty IDs returns no paris", func(t *testing.T) {
+		gen := NewPairGenerator([]string{})
+		victim, attacker, hasNext := gen.Next()
+		if victim != "" || attacker != "" || hasNext {
+			t.Errorf("expected empty pair, got (%s, %s, %v)", victim, attacker, hasNext)
+		}
+	})
+
+	t.Run("Exhausted generator returns empty", func(t *testing.T) {
+		gen := NewPairGenerator([]string{"1", "2"})
+		gen.Next()
+		victim, attacker, hasNext := gen.Next()
+		if victim != "" || attacker != "" || hasNext {
+			t.Errorf("expected empty after exhausted, got (%s, %s, %v)", victim, attacker, hasNext)
+		}
+	})
 }

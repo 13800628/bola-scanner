@@ -71,12 +71,13 @@ func (s *Scanner) PrepareVictimData(victimAuth auth.Authenticator, victimID stri
 	return nil
 }
 
-func (s *Scanner) scanOne(id string) (ScanResult, error) {
-	targetURL := s.buildURL(id)
+func (s *Scanner) scanOne(job ScanJob) (ScanResult, error) {
+	targetURL := s.buildURL(job.VictimID)
 	req, err := http.NewRequest("GET", targetURL, nil)
 	if err != nil {
 		return ScanResult{}, err
 	}
+	// 今後はAuthenticatorに切り替える
 	s.Auth.Apply(req)
 
 	resp, err := s.Client.Do(req)
@@ -113,7 +114,7 @@ func (s *Scanner) Run() []ScanResult {
 		go func() {
 			defer wg.Done()
 			for job := range idChan {
-				res, err := s.scanOne(job.VictimID)
+				res, err := s.scanOne(job)
 				if err != nil {
 					continue
 				}

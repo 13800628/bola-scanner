@@ -12,7 +12,7 @@ type RetryClient struct {
 	Client     http.Client
 }
 
-func (c *RetryClient) CalcukateBackoff(attempt int) time.Duration {
+func (c *RetryClient) CalculateBackoff(attempt int) time.Duration {
 	if attempt <= 0 {
 		return 0
 	}
@@ -27,7 +27,7 @@ func (c *RetryClient) Do(req *http.Request) (*http.Response, error) {
 
 	for i := 0; i < c.MaxRetries; i++ {
 		if i > 0 {
-			time.Sleep(c.CalcukateBackoff(i))
+			time.Sleep(c.CalculateBackoff(i))
 		}
 
 		resp, err = c.Client.Do(req)

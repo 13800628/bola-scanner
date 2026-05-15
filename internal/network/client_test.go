@@ -58,7 +58,7 @@ func TestRetryClient_CalculateBackoff(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actual := client.CalcukateBackoff(tt.attempt)
+		actual := client.CalculateBackoff(tt.attempt)
 		if actual != tt.expected {
 			t.Errorf("attempt %d: expected %v, got %v", tt.attempt, tt.expected, actual)
 		}

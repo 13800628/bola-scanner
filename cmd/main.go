@@ -74,7 +74,11 @@ func fetchVictimBaseline(client *network.RetryClient, v *auth.Profile, tmpl stri
 
 	v.GetAuthenticator().Apply(req)
 
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(fmt.Sprintf("[-] Failed to fetch baseline data (is the target server running?): %v", err))
+	}
+
 	body, _ := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 

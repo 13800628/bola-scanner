@@ -34,11 +34,16 @@ func main() {
 	_ = attacker.Login(baseURL)
 	_ = victim.Login(baseURL)
 
-	gen := generator.NewSequentialGenerator(100, 120, "")
-	at := &auth.NoAuth{}
+	attackerKey := "attacker_attacker"
+	gen := generator.NewSequentialGenerator(100, 120, attackerKey)
+
+	authMap := map[string]auth.Authenticator{
+		attackerKey: attacker.GetAuthenticator(),
+		"":          &auth.NoAuth{},
+	}
 
 	// スキャナーの作成
-	s := scanner.NewScanner(urlTmpl, ev, gen, at, 5, client)
+	s := scanner.NewScanner(urlTmpl, ev, gen, authMap, 5, client)
 	s.Keywords = keywords
 
 	fmt.Println("[*] Fetching victim's baseline data...")

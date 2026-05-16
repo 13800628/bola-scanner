@@ -24,7 +24,12 @@ func TestScanner_Run(t *testing.T) {
 		BaseDelay:  10 * time.Millisecond,
 		Client:     http.Client{},
 	}
-	s := NewScanner(urlTmpl, ev, gen, &auth.NoAuth{}, 1, client)
+
+	testAuthMap := map[string]auth.Authenticator{
+		"": &auth.NoAuth{},
+	}
+
+	s := NewScanner(urlTmpl, ev, gen, testAuthMap, 1, client)
 
 	s.VictimData = evaluator.ResponseData{
 		StatusCode: 200,
@@ -70,7 +75,9 @@ func TestScanner_RunParallel(t *testing.T) {
 
 	gen := generator.NewSequentialGenerator(1, 3, "")
 	ev := evaluator.NewEvaluator()
-	auth := &auth.NoAuth{}
+	testAuthMap := map[string]auth.Authenticator{
+		"": &auth.NoAuth{},
+	}
 
 	client := &network.RetryClient{
 		MaxRetries: 1,
@@ -79,7 +86,7 @@ func TestScanner_RunParallel(t *testing.T) {
 	}
 
 	// テスト用にURLはモックとしている、今後は動的に取得したものを使う方針にする
-	s := NewScanner("http://example.com/{{ID}}", ev, gen, auth, 2, client)
+	s := NewScanner("http://example.com/{{ID}}", ev, gen, testAuthMap, 2, client)
 	s.WorkerCount = 2 // 並行処理のワーカーの数
 
 	results := s.Run()

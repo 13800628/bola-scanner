@@ -45,10 +45,11 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 		SizeWeight:      10,
 	}
 	gen := generator.NewSequentialGenerator(100, 102, "")
-	// テストが通らない
-	at := &auth.NoAuth{}
+	testAuthMap := map[string]auth.Authenticator{
+		"": &auth.NoAuth{},
+	}
 
-	s := NewScanner(ts.URL+"/api/users/{{ID}}", ev, gen, at, 2, client)
+	s := NewScanner(ts.URL+"/api/users/{{ID}}", ev, gen, testAuthMap, 2, client)
 	s.VictimData = victimData
 
 	results := s.Run()

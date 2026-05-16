@@ -15,7 +15,7 @@ import (
 type Scanner struct {
 	Evaluator   *evaluator.Evaluator
 	Generator   generator.TargetGenerator
-	Auth        auth.Authenticator
+	AuthMap     map[string]auth.Authenticator
 	URLTemplate string
 	VictimData  evaluator.ResponseData
 	WorkerCount int
@@ -35,12 +35,12 @@ type ScanJob struct {
 	AttackerID string
 }
 
-func NewScanner(urlTemplate string, e *evaluator.Evaluator, g generator.TargetGenerator, a auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
+func NewScanner(urlTemplate string, e *evaluator.Evaluator, g generator.TargetGenerator, authMap map[string]auth.Authenticator, workerCount int, client *network.RetryClient) *Scanner {
 	return &Scanner{
 		URLTemplate: urlTemplate,
 		Evaluator:   e,
 		Generator:   g,
-		Auth:        a,
+		AuthMap:     authMap,
 		WorkerCount: workerCount,
 		Client:      client,
 	}
@@ -77,8 +77,10 @@ func (s *Scanner) scanOne(job ScanJob) (ScanResult, error) {
 	if err != nil {
 		return ScanResult{}, err
 	}
-	// 今後はAuthenticatorに切り替える
-	s.Auth.Apply(req)
+	//
+	if authenticator, exists := s.AuthMap[job.AttackerID]; exists {
+		authenticator.Apply(req)
+	}
 
 	resp, err := s.Client.Do(req)
 	if err != nil {

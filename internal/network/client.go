@@ -25,6 +25,7 @@ func (c *RetryClient) Do(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 
+	// TODO: POST対応時はreq.GetBodyでBodyを再生成する
 	for i := 0; i < c.MaxRetries; i++ {
 		if i > 0 {
 			time.Sleep(c.CalculateBackoff(i))

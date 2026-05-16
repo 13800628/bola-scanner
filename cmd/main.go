@@ -26,8 +26,8 @@ func main() {
 	urlTmpl := "http://api.example.com/v1/users/{{ID}}"
 	keywords := []string{"admin", "password", "email", "sercret", "token"}
 
-	attacker := &auth.Profile{Username: "attacker_user", Password: "password123"}
-	victim := &auth.Profile{Username: "victim_user", Password: "password456"}
+	attacker := auth.NewProfile("attacker_user", "password123")
+	victim := auth.NewProfile("victim_user", "password456")
 
 	baseURL := "http://api.example.com"
 	fmt.Println("[*] Authenticating users...")

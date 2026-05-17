@@ -15,6 +15,7 @@ import (
 )
 
 func main() {
+	// サーバーがない状態でも動くようにモックサーバーを使う
 	fmt.Println("BOLA Scanner Starting...")
 
 	ev := evaluator.NewEvaluator()

@@ -36,7 +36,6 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 		Client:     http.Client{},
 	}
 
-	// 重みの設定しないとスコアが０になる(ここを忘れていたためにBOLAが検出できていなかった)
 	// evaluator側でこの重みを使ってスコアを計算する(今後はプロダクト側で重みを設定する)
 	ev := evaluator.NewEvaluator()
 	gen := generator.NewSequentialGenerator(100, 102, "", "")
@@ -53,7 +52,7 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 	for _, res := range results {
 		fmt.Printf("ID: %s, Score: %f\n", res.ID, res.Score)
 		// フラグを立てる条件(今後は拡張の可能性高い)
-		if res.ID == ts.URL+"/api/users/101" && res.Score > 1.0 {
+		if res.ID == ts.URL+"/api/users/101" && res.IsBOLA() {
 			foundBOLA = true
 		}
 	}

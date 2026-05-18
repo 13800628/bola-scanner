@@ -63,7 +63,11 @@ func (s *Scanner) PrepareVictimData(victimAuth auth.Authenticator, victimID stri
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	s.VictimData = evaluator.ResponseData{
 		Body:       string(body),
 		StatusCode: resp.StatusCode,

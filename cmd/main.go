@@ -30,7 +30,7 @@ func main() {
 		}
 
 		// それ以外ならダミーユーザーデータを
-		w.Write([]byte(`[{"id": 100, "name"" "test_user", "email": "test@example.com"}]`))
+		w.Write([]byte(`[{"id": 100, "name": "test_user", "email": "test@example.com"}]`))
 	}))
 	defer server.Close()
 

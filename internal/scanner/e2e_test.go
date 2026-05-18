@@ -21,7 +21,7 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 		if r.URL.Path == "/api/users/101" {
 			fmt.Fprint(w, `{"id":101, "name":"Victim", "secret":"top-secret"}`)
 		} else {
-			fmt.Fprint(w, `{"id":unknown, "name":"Other", "secret":"nothing"}`)
+			fmt.Fprint(w, `{"id":999, "name":"Other", "secret":"nothing"}`)
 		}
 	}))
 	defer ts.Close()

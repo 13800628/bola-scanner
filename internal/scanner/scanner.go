@@ -76,7 +76,7 @@ func (s *Scanner) PrepareVictimData(victimAuth auth.Authenticator, victimID stri
 }
 
 func (s *Scanner) scanOne(job ScanJob) (ScanResult, error) {
-	targetURL := s.buildURL(job.AttackerID)
+	targetURL := s.buildURL(job.VictimID)
 	req, err := http.NewRequest("GET", targetURL, nil)
 	if err != nil {
 		return ScanResult{}, err

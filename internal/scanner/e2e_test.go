@@ -37,6 +37,7 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 
 	s := NewScanner(ts.URL+"/api/users/{{ID}}", ev, gen, testAuthMap, 2, client)
 	s.VictimData = victimData
+	s.Keywords = []string{"secret", "Victim"}
 
 	results := s.Run()
 

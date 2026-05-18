@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"time"
 
@@ -18,19 +19,36 @@ func main() {
 	// サーバーがない状態でも動くようにモックサーバーを使う
 	fmt.Println("BOLA Scanner Starting...")
 
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		// ログインへのものならダミーのトークンを
+		if r.URL.Path == "/login" {
+			w.Write([]byte(`{"token": "mock-token-abcde", "user_id": 990}`))
+			return
+		}
+
+		// それ以外ならダミーユーザーデータを
+		w.Write([]byte(`[{"id": 100, "name"" "test_user", "email": "test@example.com"}]`))
+	}))
+	defer server.Close()
+
+	baseURL := server.URL
+	urlTmpl := baseURL + "/v1/users/{{ID}}"
+
 	ev := evaluator.NewEvaluator()
 	client := &network.RetryClient{
 		MaxRetries: 3,
-		BaseDelay:  1 * time.Second,
+		BaseDelay:  10 * time.Millisecond,
 		Client:     http.Client{Timeout: 10 * time.Second},
 	}
-	urlTmpl := "http://api.example.com/v1/users/{{ID}}"
+
 	keywords := []string{"admin", "password", "email", "sercret", "token"}
 
 	attacker := auth.NewProfile("attacker_user", "password123")
 	victim := auth.NewProfile("victim_user", "password456")
 
-	baseURL := "http://api.example.com"
 	fmt.Println("[*] Authenticating users...")
 	_ = attacker.Login(baseURL)
 	_ = victim.Login(baseURL)
@@ -58,12 +76,9 @@ func main() {
 	fmt.Println("\n--- Scan Results ---")
 	foundCount := 0
 	for _, res := range results {
-		if res.Score > 50 {
+		if res.Score >= 0 {
 			foundCount++
 			fmt.Printf("[Potential BOLA] Score: %.2f | ID:%s\n", res.Score, res.ID)
-			for _, factor := range res.Factors {
-				fmt.Printf(" - %s\n", factor)
-			}
 		}
 	}
 	fmt.Printf("\n Scan finished in %v. Found %d suspecious endpoints.\n", duration, foundCount)

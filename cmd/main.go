@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -50,8 +51,13 @@ func main() {
 	victim := auth.NewProfile("victim_user", "password456")
 
 	fmt.Println("[*] Authenticating users...")
-	_ = attacker.Login(baseURL)
-	_ = victim.Login(baseURL)
+
+	if err := attacker.Login(baseURL); err != nil {
+		log.Fatalf("attacker login failed: %v", err)
+	}
+	if err := victim.Login(baseURL); err != nil {
+		log.Fatalf("victim login failed: %v", err)
+	}
 
 	attackerKey := "attacker_attacker"
 	gen := generator.NewSequentialGenerator(100, 120, "", attackerKey)

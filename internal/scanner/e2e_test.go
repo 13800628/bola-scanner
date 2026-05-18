@@ -15,15 +15,7 @@ import (
 
 func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 	// テスト用脆弱性を持つサーバー
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// ここの条件分岐は今後拡張の可能性高いし、条件が重くなる可能性もあるため、別関数として切り出すことも検討
-		if r.URL.Path == "/api/users/101" {
-			fmt.Fprint(w, `{"id":101, "name":"Victim", "secret":"top-secret"}`)
-		} else {
-			fmt.Fprint(w, `{"id":999, "name":"Other", "secret":"nothing"}`)
-		}
-	}))
+	ts := httptest.NewServer(http.HandlerFunc(mockUserServer))
 	defer ts.Close()
 
 	victimData := evaluator.ResponseData{
@@ -59,4 +51,13 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 	if !foundBOLA {
 		t.Error("BOLA was not detected for ID 101, but it should have been.")
 	}
+}
+
+// テスト用の関数
+func mockUserServer(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/users/101" {
+		fmt.Fprint(w, `{"id": 101, "name": "Victim", "secret": "top-secret"}`)
+		return
+	}
+	fmt.Fprint(w, `{"id": 999, "name": "Other", "secret": "nothing"}`)
 }

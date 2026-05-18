@@ -81,7 +81,8 @@ func (s *Scanner) scanOne(job ScanJob) (ScanResult, error) {
 	if err != nil {
 		return ScanResult{}, err
 	}
-	//
+
+	// Attackerに対応する認証情報があれば適応する
 	if authenticator, exists := s.AuthMap[job.AttackerID]; exists {
 		authenticator.Apply(req)
 	}

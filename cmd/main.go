@@ -76,7 +76,7 @@ func main() {
 	fmt.Println("\n--- Scan Results ---")
 	foundCount := 0
 	for _, res := range results {
-		if res.Score >= 0 {
+		if res.Score >= 70 {
 			foundCount++
 			fmt.Printf("[Potential BOLA] Score: %.2f | ID:%s\n", res.Score, res.ID)
 		}

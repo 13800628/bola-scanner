@@ -72,7 +72,11 @@ func main() {
 	s.Keywords = keywords
 
 	fmt.Println("[*] Fetching victim's baseline data...")
-	s.VictimData = fetchVictimBaseline(client, victim, urlTmpl)
+	victimData, err := fetchVictimBaseline(client, victim, urlTmpl)
+	if err != nil {
+		log.Fatalf("failed to fetch victim baseline: %v", err)
+	}
+	s.VictimData = victimData
 
 	fmt.Printf("Scanning %s ...\n", urlTmpl)
 	startTime := time.Now()
@@ -90,22 +94,29 @@ func main() {
 	fmt.Printf("\n Scan finished in %v. Found %d suspecious endpoints.\n", duration, foundCount)
 }
 
-func fetchVictimBaseline(client *network.RetryClient, v *auth.Profile, tmpl string) evaluator.ResponseData {
+func fetchVictimBaseline(client *network.RetryClient, v *auth.Profile, tmpl string) (evaluator.ResponseData, error) {
 	url := strings.Replace(tmpl, "{{ID}}", fmt.Sprintf("%d", v.UserID), 1)
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return evaluator.ResponseData{}, err
+	}
 
 	v.GetAuthenticator().Apply(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(fmt.Sprintf("[-] Failed to fetch baseline data (is the target server running?): %v", err))
+		return evaluator.ResponseData{}, fmt.Errorf("failed to fetch baseline: %w", err)
 	}
 
-	body, _ := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return evaluator.ResponseData{}, err
+	}
 
 	return evaluator.ResponseData{
 		StatusCode: resp.StatusCode,
 		Body:       string(body),
-	}
+	}, nil
 }

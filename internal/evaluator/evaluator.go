@@ -111,6 +111,12 @@ func (e *Evaluator) FullEvaluation(victim, attacker ResponseData, keywords []str
 	return res
 }
 
+// BOLA判定をスコア70以上にするbool型で追加
+// 将来的に容易に追加できるように
+func (r *EvaluationResult) IsBOLA() bool {
+	return r.TotalScore >= 70
+}
+
 func extractKeys(m map[string]interface{}) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {

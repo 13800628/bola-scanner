@@ -54,7 +54,7 @@ func main() {
 	_ = victim.Login(baseURL)
 
 	attackerKey := "attacker_attacker"
-	gen := generator.NewSequentialGenerator(100, 120, attackerKey)
+	gen := generator.NewSequentialGenerator(100, 120, "", attackerKey)
 
 	authMap := map[string]auth.Authenticator{
 		attackerKey: attacker.GetAuthenticator(),

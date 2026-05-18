@@ -16,7 +16,7 @@ func TestScanner_Run(t *testing.T) {
 	ev := evaluator.NewEvaluator()
 
 	urlTmpl := "http://localhost:8080/users/{{ID}}"
-	gen := generator.NewSequentialGenerator(10, 10, "")
+	gen := generator.NewSequentialGenerator(10, 10, "", "")
 
 	// ここはモックにする、今後は動的なもにする可能性高い
 	client := &network.RetryClient{
@@ -73,7 +73,7 @@ func TestScanner_RunParallel(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	gen := generator.NewSequentialGenerator(1, 3, "")
+	gen := generator.NewSequentialGenerator(1, 3, "", "")
 	ev := evaluator.NewEvaluator()
 	testAuthMap := map[string]auth.Authenticator{
 		"": &auth.NoAuth{},

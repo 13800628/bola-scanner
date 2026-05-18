@@ -44,7 +44,7 @@ func TestScanner_E2E_BOLA_Detection(t *testing.T) {
 		KeywordWeight:   10,
 		SizeWeight:      10,
 	}
-	gen := generator.NewSequentialGenerator(100, 102, "")
+	gen := generator.NewSequentialGenerator(100, 102, "", "")
 	testAuthMap := map[string]auth.Authenticator{
 		"": &auth.NoAuth{},
 	}

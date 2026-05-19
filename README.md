@@ -1,0 +1,120 @@
+# BOLA Scanner (Automated Vulnerability Scanner)
+
+並行処理（Goroutine）、動的マルチ認証、および応答評価ロジックを兼ね備えた、実戦仕様の BOLA（Broken Object Level Authorization / 認可制御の不備）自動診断ツールです。
+
+ターゲットとなる API に対して、**「攻撃者の立場（トークン）」で「被害者のデータ（ID）」にアクセス**し、被害者本人の正常な応答（ベースライン）と比較することで、認可制御の不備をインテリジェントに検出します。
+
+## 主な機能
+
+*   **インタラクティブ（対話型）モード**: 
+起動時にターゲット URL を自由に入力可能。
+
+*   **ビルトイン・モックサーバー**: 
+ターゲットが起動していない状態でも、エンターを押すだけで安全にスキャンのデモ走行・テストが可能。
+
+*   **動的マルチコンテキスト認証**: 
+リクエストごとに、攻撃者A、攻撃者B、未認証（NoAuth）などのトークンを高速に切り替えて送信。
+
+*   **インテリジェント評価（Evaluator）**:
+HTTP 200 OK だけでなく、被害者のベースライン応答との類似度、機密キーワード（password, secret 等）の露出度から危険性をスコア化。
+
+*   **超高速な並行スキャン**:
+Go の Channel と Worker Pool パターンにより、数千件の ID スキャンをミリ秒単位で処理。
+
+---
+
+## 構成
+
+各コンポーネントが役割ごとに完全に分離された、疎結合（ルーズリープ）な設計を採用しています。
+
+*   **`cmd/main.go`**:
+エントリポイント。対話型 CLI によるモード選択、ユーザー認証、スキャンのキックを行う。
+
+*   **`internal/generator/`**:
+診断シナリオ（ジョブ）の生成器。インターフェース化されており、連番（Sequential）や総当たり（Pair）などの作戦を容易に切り替え可能。
+
+*   **`internal/auth/`**:
+認証情報管理。ログイン処理および各 Worker へ適用するトークンのマッピング（`AuthMap`）を担当。
+
+*   **`internal/scanner/`**:
+スキャナーコア。Channel から流れてくるジョブを複数の Worker で奪い合い、並行してリクエストを送信。
+
+*   **`internal/evaluator/`**:
+応答評価エンジン。差分検出アルゴリズムとキーワードマッチングによるスコアリング。
+
+---
+
+## 使い方
+
+### 1. 依存関係の確認
+Go 1.18 以上がインストールされていることを確認してください。
+
+### 2. スキャナーの起動
+プロジェクトのルートディレクトリで以下のコマンドを実行します。
+
+bash
+go run cmd/main.go
+
+
+
+3. モードの選択
+A. モック・デモモード（まず試したいとき）
+URL を入力せずにそのまま Enter を押します。メモリ上にダミーの API サーバーが一瞬で立ち上がり、21件のテストスキャンが超高速で実行されます。
+
+Enter target Base URL (e.g., [http://api.example.com](http://api.example.com))
+[Leave empty to run in Mock Demo Mode]: 
+
+[*] Mode: MOCK DEMO (Using built-in mock server)
+
+
+B. ライブ（実戦）モード
+診断対象のベース URL（例: http://localhost:8000）を入力して Enter を押します。
+
+Enter target Base URL (e.g., [http://api.example.com](http://api.example.com))
+[Leave empty to run in Mock Demo Mode]: http://localhost:8000
+
+[*] Mode: LIVE SCANNING -> http://localhost:8000
+
+
+-----------------------------
+
+## 将来の拡張性・設計指針 (Future Roadmap & Extensibility)
+
+本ツールは、各コンポーネントがインターフェースを介して疎結合に繋がっているため、既存のコアロジックを破壊することなく、以下の機能をプラグイン感覚で追加・修正できるように設計されています。
+
+### 1. 認証レイヤーの拡張 (Short-term)
+現在の `main.go` にハードコードされている認証情報の外出し、および実戦向けの柔軟な認証方式に対応。
+
+*   **認証設定の外部ファイル化**:
+アカウント情報（ID/Pass）を `config.yaml` や `.env` から動的に読み込む機能の追加。
+
+*   **生トークン（Raw Token）インジェクション**:
+ログイン処理をスキップし、ブラウザ等から奪取した既存の `Bearer <TOKEN>` を直接指定してスキャンを開始できる `TokenAuth` 構造体の追加（`auth.Authenticator` インターフェースを満たす形で実装）。
+
+### 2. 診断シナリオ（ジェネレーター）の多角化 (Medium-term)
+`TargetGenerator` インターフェース（`Next() (string, string, bool)`）の実装を増やすだけで、診断アプローチを瞬時に切り替えられます。
+
+*   **`PairGenerator` (総当たり型)**:
+複数人の攻撃者トークン × 複数人の被害者ID を掛け合わせ、クロスアカウントでの認可不備を網羅的に検証。
+
+*   **`RandomUUIDGenerator` (ランダム型)**:
+連番ではない、UUIDや不連続なIDを持つAPIに対して、事前に用意したIDリストからランダムにジョブを生成する機能。
+
+### 3. スキャン対象（パス）の動的テンプレート化 (Medium-term)
+現在は `/v1/users/{{ID}}` 固定となっているパスを、ユーザーが対話型CLIまたは設定ファイルから自由に変更できるようにします。
+
+*   `/v1/items/{{ID}}` や `/api/tenants/{{TENANT_ID}}/profiles` のように、プレースホルダーを用いた動的パスへの対応。
+*   `Scanner` 側の URL 置換ロジックを `strings.ReplaceAll(tmpl, "{{ID}}", id)` から汎用的なマップ置換へアップグレードすることで、複数変数の埋め込みにも耐えられる構造へ進化させます。
+
+### 4. レポーティングと出力の強化 (Long-term)
+大量のスキャン結果から、真に危険な脆弱性（High Score）のみを効率的にレビューするための出力インターフェースを実装します。
+
+*   `internal/reporter` パッケージの新設。
+*   検出された BOLA 脆弱性の詳細（スコア、リクエスト/レスポンスのヘッダー・ボディの差分、検知キーワード）を、Markdown または JSON フォーマットでレポートファイルとして自動出力。
+
+---
+
+## 現在認識されている修正・リファクタリング候補 (Technical Debts)
+
+*   **[ネットワーク] コンテキストの伝播（Context Support）**: `Scanner` や `RetryClient` に `context.Context` を導入し、CLI側で `Ctrl+C` が押された際や、タイムアウト時に並行稼働中の全 Worker（Goroutine）を安全かつ即座に一斉停止（Graceful Shutdown）できる仕組みへの改善。
+*   **[評価ロジック] スコア精度のチューニング**: 現状の `Evaluator` の文字列類似度計算とキーワードマッチングに加え、レスポンスの「JSON構造（キーの数や型）」の変化を捉えるロジックを導入し、誤検知（False Positive）をさらに減らす。

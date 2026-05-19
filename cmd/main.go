@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"time"
 
@@ -18,24 +20,38 @@ import (
 
 func main() {
 	// サーバーがない状態でも動くようにモックサーバーを使う
-	fmt.Println("BOLA Scanner Starting...")
+	fmt.Println("========================================")
+	fmt.Println("         BOLA Scanner Starting...       ")
+	fmt.Println("========================================")
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter target Base URL (e.g., http://api.example.com)\n[Leave empty to run in Mock Deomo Mode]: ")
 
-		// ログインへのものならダミーのトークンを
-		if r.URL.Path == "/login" {
-			w.Write([]byte(`{"token": "mock-token-abcde", "user_id": 990}`))
-			return
-		}
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
 
-		// それ以外ならダミーユーザーデータを
-		w.Write([]byte(`[{"id": 100, "name": "test_user", "email": "test@example.com"}]`))
-	}))
-	defer server.Close()
+	var baseURL string
+	var mockServer *httptest.Server
 
-	baseURL := server.URL
+	if input != "" {
+		baseURL = strings.TrimSuffix(input, "/")
+		fmt.Printf("\n[*] Mode: LIVE SCANNING -> %s\n\n", baseURL)
+	} else {
+		// Mock
+		fmt.Println("\n[*] Mode: MOCK DEMO (Using built-in mock server)")
+		mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if r.URL.Path == "/login" {
+				w.Write([]byte(`{"token": "mock-token-abcde", "user_id": 999}`))
+				return
+			}
+			w.Write([]byte(`{"id": 100, "name": "tesr_user", "email": "test@example.com"}`))
+		}))
+		baseURL = mockServer.URL
+		defer mockServer.Close()
+	}
+
 	urlTmpl := baseURL + "/v1/users/{{ID}}"
 
 	ev := evaluator.NewEvaluator()

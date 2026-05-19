@@ -25,7 +25,7 @@ func main() {
 	fmt.Println("========================================")
 
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter target Base URL (e.g., http://api.example.com)\n[Leave empty to run in Mock Deomo Mode]: ")
+	fmt.Print("Enter target Base URL (e.g., http://api.example.com)\n[Leave empty to run in Mock Demo Mode]: ")
 
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
@@ -46,7 +46,7 @@ func main() {
 				w.Write([]byte(`{"token": "mock-token-abcde", "user_id": 999}`))
 				return
 			}
-			w.Write([]byte(`{"id": 100, "name": "tesr_user", "email": "test@example.com"}`))
+			w.Write([]byte(`{"id": 100, "name": "test_user", "email": "test@example.com"}`))
 		}))
 		baseURL = mockServer.URL
 		defer mockServer.Close()
@@ -61,7 +61,7 @@ func main() {
 		Client:     http.Client{Timeout: 10 * time.Second},
 	}
 
-	keywords := []string{"admin", "password", "email", "sercret", "token"}
+	keywords := []string{"admin", "password", "email", "secret", "token"}
 
 	attacker := auth.NewProfile("attacker_user", "password123")
 	victim := auth.NewProfile("victim_user", "password456")
@@ -107,7 +107,7 @@ func main() {
 			fmt.Printf("[Potential BOLA] Score: %.2f | ID:%s\n", res.Score, res.ID)
 		}
 	}
-	fmt.Printf("\n Scan finished in %v. Found %d suspecious endpoints.\n", duration, foundCount)
+	fmt.Printf("\n Scan finished in %v. Found %d suspicious endpoints.\n", duration, foundCount)
 }
 
 func fetchVictimBaseline(client *network.RetryClient, v *auth.Profile, tmpl string) (evaluator.ResponseData, error) {

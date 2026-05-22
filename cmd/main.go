@@ -18,6 +18,7 @@ import (
 	"github.com/yuto-isayama/bola-scanner/internal/scanner"
 )
 
+// トークンの取得を動的におこなえるように今後拡張予定
 func main() {
 	// サーバーがない状態でも動くようにモックサーバーを使う
 	fmt.Println("========================================")

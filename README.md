@@ -118,3 +118,7 @@ Enter target Base URL (e.g., [http://api.example.com](http://api.example.com))
 
 *   **[ネットワーク] コンテキストの伝播（Context Support）**: `Scanner` や `RetryClient` に `context.Context` を導入し、CLI側で `Ctrl+C` が押された際や、タイムアウト時に並行稼働中の全 Worker（Goroutine）を安全かつ即座に一斉停止（Graceful Shutdown）できる仕組みへの改善。
 *   **[評価ロジック] スコア精度のチューニング**: 現状の `Evaluator` の文字列類似度計算とキーワードマッチングに加え、レスポンスの「JSON構造（キーの数や型）」の変化を捉えるロジックを導入し、誤検知（False Positive）をさらに減らす。
+
+* **[認証トークン取得] 学習用途に限定した認証処理**:
+  現状はダミーサイト環境に限定した認証フローのみを対象としている。
+  実運用サービスへの適用は想定しておらず、ローカル学習環境での検証用途に留める。

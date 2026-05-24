@@ -38,6 +38,6 @@ func TestScanner_AuthApplication(t *testing.T) {
 		t.Fatalf("Apply failed: %v", err)
 	}
 	if req.Header.Get("X-Test-Auth") != "authenticated" {
-		t.Errorf("Auth header was not set correnctly")
+		t.Errorf("Auth header was not set correctly")
 	}
 }

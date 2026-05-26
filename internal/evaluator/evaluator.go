@@ -14,6 +14,8 @@ type EvaluationResult struct {
 	TotalScore int
 	Factors    []string
 }
+
+// 重みづけのための構造体
 type Evaluator struct {
 	StatusWeight    int
 	StructureWeight int

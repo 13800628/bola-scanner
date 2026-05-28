@@ -40,6 +40,7 @@ type Profile struct {
 	Client   *http.Client
 }
 
+// プロフィールの初期化(ここが整合性の担保必要な部分)
 func NewProfile(username, password string) *Profile {
 	return &Profile{
 		Username: username,

@@ -1,4 +1,8 @@
 # BOLA Scanner (Automated Vulnerability Scanner)
+前提としてローカルで行うものになります。
+そして診断をどのように行うのか、その裏側を実際に学習用途で開発することでセキュリティの知識も深められるのではという前提で開発しております。
+
+そしてこのREADMEはGeminiを活用して作成しております(各所で私自身で書いている場もあります)、ご了承ください。
 
 並行処理（Goroutine）、動的マルチ認証、および応答評価ロジックを兼ね備えた、実戦仕様の BOLA（Broken Object Level Authorization / 認可制御の不備）自動診断ツールです。
 

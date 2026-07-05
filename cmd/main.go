@@ -37,6 +37,7 @@ func main() {
 	if input != "" {
 		baseURL = strings.TrimSuffix(input, "/")
 		fmt.Printf("\n[*] Mode: LIVE SCANNING -> %s\n\n", baseURL)
+		// 現状基本的にはモックサーバーでの挙動が多い
 	} else {
 		// Mock
 		fmt.Println("\n[*] Mode: MOCK DEMO (Using built-in mock server)")

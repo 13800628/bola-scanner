@@ -161,6 +161,7 @@ func (s *Scanner) buildURL(id string) string {
 	return strings.Replace(s.URLTemplate, "{{ID}}", id, 1)
 }
 
+// 判定する関数だが浅いので今後改善余地か
 func (r *ScanResult) IsBOLA() bool {
 	return r.Score >= 70
 }

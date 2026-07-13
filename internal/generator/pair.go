@@ -15,6 +15,7 @@ func NewPairGenerator(ids []string) *PairGenerator {
 }
 
 func (g *PairGenerator) Next() (victim, attacker string, hasNext bool) {
+	// この二つのガード節を今後関数で汎用的に使えるような形にするのもありか
 	// IDが一つしかない部分でのガード節
 	if len(g.ids) < 2 {
 		return "", "", false

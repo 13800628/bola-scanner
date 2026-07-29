@@ -115,7 +115,6 @@ func (s *Scanner) Run() []ScanResult {
 	resultChan := make(chan ScanResult)
 	var wg sync.WaitGroup
 
-	// ワーカーの起動
 	for i := 0; i < s.WorkerCount; i++ {
 		wg.Add(1)
 		go func() {

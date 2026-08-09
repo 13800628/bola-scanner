@@ -62,3 +62,5 @@ func mockUserServer(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprint(w, `{"id": 999, "name": "Other", "secret": "nothing"}`)
 }
+
+// 今後テストの追加必要か？
